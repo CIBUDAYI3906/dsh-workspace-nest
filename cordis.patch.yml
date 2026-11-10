@@ -1,0 +1,9 @@
+# dsh-workspace-nest — this bundle's configuration layer.
+#
+# `dsh plugin add` appends the package to the profile's `dsh.profile.bundles`;
+# the launcher applies this patch when the profile boots. The row mounts this
+# package's host half (the child-workspace directory route) and its browser
+# bundle (the nested sidebar tree).
+- insert:
+    - id: dsh-workspace-nest
+      name: dsh-workspace-nest

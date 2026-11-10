@@ -1,0 +1,471 @@
+/* Nested workspace tree (dsh-workspace-tree). Values reuse the sidebar's own
+   design tokens so the region keeps the shipped look in both themes. */
+
+.root {
+  --dsh-session-list-edge-inset: var(--dsh-sidebar-inline-padding, 12px);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding-right: var(--dsh-session-list-edge-inset);
+}
+
+.root.rail {
+  padding-right: 0;
+}
+
+.railColumn {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.railButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.railButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.sectionHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding-left: 4px;
+  margin: 2px -4px 4px 0;
+  box-sizing: border-box;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.sectionLabel {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.searchSlot {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px 0 8px;
+  border-radius: 8px;
+  /* Quiet capsule: the sidebar is not a form, so the field carries no border
+     and only fills in on hover/focus (the same posture as the shipped search). */
+  background: var(--dsw-alias-button-elevated-fill);
+}
+
+.searchGlyph {
+  flex: none;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  padding: 3px 0;
+}
+
+.searchInput::placeholder {
+  color: var(--dsw-alias-label-dimmed);
+}
+
+.iconButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.iconButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.listArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
+}
+
+/* Workspace header and session rows share geometry; the nesting indentation is
+   the inline paddingLeft the tree computes from its depth. */
+.workspaceRow,
+.sessionRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  color: var(--dsw-alias-label-primary);
+}
+
+.workspaceRow {
+  height: 32px;
+}
+
+.sessionRow {
+  height: 30px;
+  animation: wst-row-in 150ms var(--ds-ease-in-out);
+}
+
+.workspaceRow:hover,
+.sessionRow:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.sessionRowCurrent {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+@keyframes wst-row-in {
+  from { opacity: 0; }
+}
+
+.slot {
+  flex: none;
+  width: 16px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* The chevron IS the expand affordance (no folder glyph doubles for it), so it
+   keeps a fixed 14px seat and its own hit target on both row kinds. */
+.chevron {
+  flex: none;
+  width: 14px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-alias-label-caption);
+  cursor: pointer;
+}
+
+.workspaceRow:hover .chevron {
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* Nesting guide: a hairline in the gutter each level reserves, drawn by the
+   row's own decoration instead of a stacked element. */
+.guide {
+  position: relative;
+  display: block;
+  height: 0;
+}
+
+.guide::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--dsw-alias-border-l2);
+  opacity: .55;
+}
+
+.guide + .workspaceRow::before,
+.workspaceRow[data-nested]::before {
+  content: '';
+}
+
+.arrow {
+  transition: transform 150ms var(--ds-ease-in-out);
+}
+
+.arrowOpen {
+  transform: rotate(90deg);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.workspaceRow[data-nested] .title {
+  font-size: 13px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.workspaceRow[data-nested]:hover .title {
+  color: var(--dsw-alias-label-primary);
+}
+
+.sessionTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: -2px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* Counts appear on hover only: the row's width belongs to the title, and the
+   hover card states the same counts for anyone who needs them. */
+.meta {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-dimmed);
+  display: none;
+}
+
+.workspaceRow:hover .meta,
+.workspaceRow.menuOpenRow .meta {
+  display: inline-block;
+}
+
+.time {
+  flex: none;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Pinned-row marker: non-interactive, at the trailing edge where the hover
+   actions land. It leaves on hover/menu-open for the same reason the time does
+   — the row's trailing width belongs to the actions while they are showing. */
+.pinIndicator {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 20px;
+  margin-left: 6px;
+  color: var(--dsw-alias-label-caption);
+}
+
+.sessionRow:hover .pinIndicator,
+.sessionRow.menuOpenRow .pinIndicator {
+  display: none;
+}
+
+.snippet {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.rowActions {
+  flex: none;
+  display: none;
+  align-items: center;
+  gap: 2px;
+}
+
+/* A row whose trailing menu is open keeps its action cell laid out. The menu is
+   portaled, so aiming at it means leaving the row — with a :hover-only reveal
+   the cell collapses mid-transit, the Menu's anchor then measures a zero rect
+   and the list re-places onto the viewport corner (the shipped browser keeps
+   its own `menuOpen` row class for the same reason). */
+.workspaceRow:hover .rowActions,
+.sessionRow:hover .rowActions,
+.workspaceRow.menuOpenRow .rowActions,
+.sessionRow.menuOpenRow .rowActions {
+  display: inline-flex;
+}
+
+.sessionRow:hover .time,
+.sessionRow.menuOpenRow .time {
+  display: none;
+}
+
+.rowButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.rowButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
+.empty {
+  padding: 12px 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.hoverCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hoverTitle {
+  font-size: 14px;
+  line-height: 20px;
+  color: #FFFFFF;
+  overflow-wrap: break-word;
+}
+
+.hoverPath,
+.hoverTime {
+  font-size: 12px;
+  line-height: 16px;
+  color: #CFD3D6;
+  word-break: break-all;
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialogHint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.dialogPath {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+  word-break: break-all;
+}
+
+.dialogInput {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 6px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-button-elevated-fill);
+  color: var(--dsw-alias-label-primary);
+  outline: none;
+}
+
+.dialogInput:focus {
+  border-color: var(--dsw-alias-state-business-primary);
+}
+
+.dialogError {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary);
+}
+
+/*
+ * Region-level failure report: a verb the composition refused (or a client
+ * generation that moved it) must be visible where the click happened, not only
+ * on the console — a silent button is exactly the bug this reports.
+ */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 8px 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-base);
+  border: 1px solid var(--dsw-alias-state-error-primary);
+}
+
+.noticeText {
+  flex: 1;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary);
+  word-break: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sessionRow,
+  .arrow {
+    animation: none;
+    transition: none;
+  }
+}

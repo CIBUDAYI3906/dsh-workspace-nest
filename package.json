@@ -1,0 +1,66 @@
+{
+  "name": "dsh-workspace-nest",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "侧边栏工作区多级嵌套：父工作区下新建子工作区，会话可置顶到所属文件夹",
+  "license": "MIT",
+  "homepage": "https://github.com/CIBUDAYI3906/dsh-workspace-nest#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CIBUDAYI3906/dsh-workspace-nest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CIBUDAYI3906/dsh-workspace-nest/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "workspace",
+    "sidebar",
+    "tree",
+    "pin"
+  ],
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "icon.png"
+  ],
+  "engines": {
+    "dsh": ">=0.2.0-rc.1 <0.3.0",
+    "node": ">=20"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-primitives",
+        "@deepseek-ai/dsh-client-store"
+      ]
+    }
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "playwright-core": "^1.61.1"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "pack": "npm pack --dry-run",
+    "preflight": "node scripts/preflight.mjs",
+    "prepublishOnly": "node scripts/preflight.mjs"
+  }
+}
