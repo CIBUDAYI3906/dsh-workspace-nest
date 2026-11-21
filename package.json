@@ -1,6 +1,6 @@
 {
   "name": "dsh-workspace-nest",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "侧边栏工作区多级嵌套：父工作区下新建子工作区，会话可置顶到所属文件夹",
   "license": "MIT",
