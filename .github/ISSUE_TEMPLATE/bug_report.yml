@@ -1,0 +1,47 @@
+name: Bug report / 问题反馈
+description: The tree, pinning, or workspace creation misbehaves.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please avoid pasting tokens, credentials, or private paths you do not want public.
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH version
+      description: 运行 `dsh --version` 的结果
+      placeholder: 0.2.2-rc.5
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: 0.1.2
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS / client
+      placeholder: macOS 15 · dsh web / desktop
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. 在一个工作区行…
+        2. 点击「新增子工作区」…
+        3. 期望… / 实际…
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or console errors
+      description: 截图可以直接拖进来；请先打码隐私信息
+    validations:
+      required: false

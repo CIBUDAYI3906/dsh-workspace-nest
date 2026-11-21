@@ -1290,15 +1290,19 @@ window.__ModuleLoader__.load({
         },
         searchResultLimit: ctx.sessions.searchResultLimit
       });
-      slots.inject("sidebar.workspaces", () => slots.register(
-        {
-          name: "sidebar.workspaces",
-          priority: -1,
-          store: createWorkspaceTreeStore(),
-          inject: injected
-        },
-        WorkspaceTree
-      ));
+      try {
+        slots.inject("sidebar.workspaces", () => slots.register(
+          {
+            name: "sidebar.workspaces",
+            priority: -1,
+            store: createWorkspaceTreeStore(),
+            inject: injected
+          },
+          WorkspaceTree
+        ));
+      } catch (reason) {
+        console.warn("[dsh-workspace-nest] sidebar slot unavailable:", reason);
+      }
     }
 
     const applyInner = apply

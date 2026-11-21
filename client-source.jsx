@@ -1482,13 +1482,19 @@ export function apply(ctx) {
     searchResultLimit: ctx.sessions.searchResultLimit,
   })
 
-  slots.inject('sidebar.workspaces', () => slots.register(
-    {
-      name: 'sidebar.workspaces',
-      priority: -1,
-      store: createWorkspaceTreeStore(),
-      inject: injected,
-    },
-    WorkspaceTree,
-  ))
+  // A future client may move the sidebar slot. Registering through a guard
+  // turns that into "no entry" instead of a failed client module.
+  try {
+    slots.inject('sidebar.workspaces', () => slots.register(
+      {
+        name: 'sidebar.workspaces',
+        priority: -1,
+        store: createWorkspaceTreeStore(),
+        inject: injected,
+      },
+      WorkspaceTree,
+    ))
+  } catch (reason) {
+    console.warn('[dsh-workspace-nest] sidebar slot unavailable:', reason)
+  }
 }

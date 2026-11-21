@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: DSH documentation
+    url: https://github.com/deepseek-ai/deepseek-harness
+    about: Questions about DeepSeek Harness itself belong here.
