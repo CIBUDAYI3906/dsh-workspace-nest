@@ -199,8 +199,10 @@ const TEXT = {
   addCommit: '添加',
   addBusy: '处理中…',
   subTitle: '新增子工作区',
-  subHint: '将在该工作区目录下创建文件夹，并把它注册为子工作区：',
+  subHint: '在该工作区目录下创建文件夹，或选一个已存在的文件夹，并把它注册为子工作区：',
   subNameLabel: '子工作区文件夹名',
+  subPick: '系统选择器',
+  subPickOutside: '请在「{name}」目录下选择文件夹；目录之外的位置注册后会变成根工作区，不会成为子工作区。',
   subCommit: '创建',
   subBusy: '创建中…',
   subBadName: '请输入一个不含路径分隔符的文件夹名。',
@@ -1048,6 +1050,25 @@ function WorkspaceTree({
     }).finally(() => { setAddBusy(false) })
   }
 
+  /**
+   * Close the sub-workspace dialog on a created child and reveal it.
+   *
+   * Shared by the two ways in (type a new folder name, or adopt an existing
+   * folder through the picker) so both leave the tree in the same state: the
+   * parent expanded, the child selected, and a first Session opened in it.
+   * @param parent - the workspace the dialog was opened from.
+   * @param workspaceId - the adopted child's id.
+   */
+  const settleSub = (parent, workspaceId) => {
+    setSubTarget(null)
+    actions.setExpanded(parent.workspaceId, true)
+    try {
+      startSession(workspaceId)
+    } catch (reason) {
+      setNotice(fmt(TEXT.noticeFailed, { action: TEXT.newSession, reason: reasonText(reason) }))
+    }
+  }
+
   const submitSub = () => {
     if (subTarget === null || subBusy) return
     const name = subName.trim()
@@ -1059,17 +1080,40 @@ function WorkspaceTree({
     setSubError(null)
     const parent = subTarget
     createChildWorkspace(parent, name)
-      .then((created) => {
-        setSubTarget(null)
-        actions.setExpanded(parent.workspaceId, true)
-        try {
-          startSession(created.workspaceId)
-        } catch (reason) {
-          setNotice(fmt(TEXT.noticeFailed, { action: TEXT.newSession, reason: reasonText(reason) }))
-        }
-      })
+      .then((created) => { settleSub(parent, created.workspaceId) })
       .catch((reason) => { setSubError(reason instanceof Error ? reason.message : String(reason)) })
       .finally(() => { setSubBusy(false) })
+  }
+
+  /**
+   * Adopt an EXISTING folder as this parent's sub-workspace through the system
+   * directory picker — the sub-workspace dialog's counterpart to the root
+   * dialog's picker button. The folder is not created: nesting is derived from
+   * path ancestry, so adopting a folder that already sits inside the parent
+   * makes it a child row with no new directory and no host route involved.
+   */
+  const chooseSubDirectory = () => {
+    if (subTarget === null || subBusy) return
+    const parent = subTarget
+    setSubBusy(true)
+    setSubError(null)
+    Promise.resolve().then(() => pickDirectory()).then((path) => {
+      if (path === null || path === undefined) return undefined
+      // A picker may hand back a trailing separator; without trimming it the
+      // parent itself would pass `isUnder` (its own prefix plus one '/') and
+      // register as a child of itself.
+      const picked = path.length > 1 ? path.replace(/[/\\]+$/, '') : path
+      // Containment is the whole contract of this dialog: a folder outside the
+      // parent would register as a root row somewhere else in the tree, which
+      // reads as "the picker ignored the row I clicked it from".
+      if (!isUnder(parent.path, picked)) {
+        setSubError(fmt(TEXT.subPickOutside, { name: parent.title }))
+        return undefined
+      }
+      return createWorkspace({ path: picked }).then((created) => { settleSub(parent, created.workspaceId) })
+    }).catch((reason) => {
+      setSubError(reasonText(reason))
+    }).finally(() => { setSubBusy(false) })
   }
 
   const submitRename = () => {
@@ -1226,6 +1270,7 @@ function WorkspaceTree({
         footer={(
           <>
             <Button variant="outline" disabled={subBusy} onClick={() => { setSubTarget(null) }}>{TEXT.cancel}</Button>
+            <Button variant="outline" disabled={subBusy} onClick={chooseSubDirectory}>{TEXT.subPick}</Button>
             <Button variant="primary" disabled={subBusy || subName.trim() === ''} onClick={submitSub}>
               {subBusy ? TEXT.subBusy : TEXT.subCommit}
             </Button>

@@ -100,8 +100,10 @@ window.__ModuleLoader__.load({
       addCommit: "\u6DFB\u52A0",
       addBusy: "\u5904\u7406\u4E2D\u2026",
       subTitle: "\u65B0\u589E\u5B50\u5DE5\u4F5C\u533A",
-      subHint: "\u5C06\u5728\u8BE5\u5DE5\u4F5C\u533A\u76EE\u5F55\u4E0B\u521B\u5EFA\u6587\u4EF6\u5939\uFF0C\u5E76\u628A\u5B83\u6CE8\u518C\u4E3A\u5B50\u5DE5\u4F5C\u533A\uFF1A",
+      subHint: "\u5728\u8BE5\u5DE5\u4F5C\u533A\u76EE\u5F55\u4E0B\u521B\u5EFA\u6587\u4EF6\u5939\uFF0C\u6216\u9009\u4E00\u4E2A\u5DF2\u5B58\u5728\u7684\u6587\u4EF6\u5939\uFF0C\u5E76\u628A\u5B83\u6CE8\u518C\u4E3A\u5B50\u5DE5\u4F5C\u533A\uFF1A",
       subNameLabel: "\u5B50\u5DE5\u4F5C\u533A\u6587\u4EF6\u5939\u540D",
+      subPick: "\u7CFB\u7EDF\u9009\u62E9\u5668",
+      subPickOutside: "\u8BF7\u5728\u300C{name}\u300D\u76EE\u5F55\u4E0B\u9009\u62E9\u6587\u4EF6\u5939\uFF1B\u76EE\u5F55\u4E4B\u5916\u7684\u4F4D\u7F6E\u6CE8\u518C\u540E\u4F1A\u53D8\u6210\u6839\u5DE5\u4F5C\u533A\uFF0C\u4E0D\u4F1A\u6210\u4E3A\u5B50\u5DE5\u4F5C\u533A\u3002",
       subCommit: "\u521B\u5EFA",
       subBusy: "\u521B\u5EFA\u4E2D\u2026",
       subBadName: "\u8BF7\u8F93\u5165\u4E00\u4E2A\u4E0D\u542B\u8DEF\u5F84\u5206\u9694\u7B26\u7684\u6587\u4EF6\u5939\u540D\u3002",
@@ -846,6 +848,15 @@ window.__ModuleLoader__.load({
           setAddBusy(false);
         });
       };
+      const settleSub = (parent, workspaceId) => {
+        setSubTarget(null);
+        actions.setExpanded(parent.workspaceId, true);
+        try {
+          startSession(workspaceId);
+        } catch (reason) {
+          setNotice(fmt(TEXT.noticeFailed, { action: TEXT.newSession, reason: reasonText(reason) }));
+        }
+      };
       const submitSub = () => {
         if (subTarget === null || subBusy) return;
         const name = subName.trim();
@@ -857,15 +868,30 @@ window.__ModuleLoader__.load({
         setSubError(null);
         const parent = subTarget;
         createChildWorkspace(parent, name).then((created) => {
-          setSubTarget(null);
-          actions.setExpanded(parent.workspaceId, true);
-          try {
-            startSession(created.workspaceId);
-          } catch (reason) {
-            setNotice(fmt(TEXT.noticeFailed, { action: TEXT.newSession, reason: reasonText(reason) }));
-          }
+          settleSub(parent, created.workspaceId);
         }).catch((reason) => {
           setSubError(reason instanceof Error ? reason.message : String(reason));
+        }).finally(() => {
+          setSubBusy(false);
+        });
+      };
+      const chooseSubDirectory = () => {
+        if (subTarget === null || subBusy) return;
+        const parent = subTarget;
+        setSubBusy(true);
+        setSubError(null);
+        Promise.resolve().then(() => pickDirectory()).then((path) => {
+          if (path === null || path === void 0) return void 0;
+          const picked = path.length > 1 ? path.replace(/[/\\]+$/, "") : path;
+          if (!isUnder(parent.path, picked)) {
+            setSubError(fmt(TEXT.subPickOutside, { name: parent.title }));
+            return void 0;
+          }
+          return createWorkspace({ path: picked }).then((created) => {
+            settleSub(parent, created.workspaceId);
+          });
+        }).catch((reason) => {
+          setSubError(reasonText(reason));
         }).finally(() => {
           setSubBusy(false);
         });
@@ -1051,6 +1077,7 @@ window.__ModuleLoader__.load({
               /* @__PURE__ */ jsx(Button, { variant: "outline", disabled: subBusy, onClick: () => {
                 setSubTarget(null);
               }, children: TEXT.cancel }),
+              /* @__PURE__ */ jsx(Button, { variant: "outline", disabled: subBusy, onClick: chooseSubDirectory, children: TEXT.subPick }),
               /* @__PURE__ */ jsx(Button, { variant: "primary", disabled: subBusy || subName.trim() === "", onClick: submitSub, children: subBusy ? TEXT.subBusy : TEXT.subCommit })
             ] }),
             children: /* @__PURE__ */ jsxs("div", { className: css.dialogBody, children: [
